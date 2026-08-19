@@ -326,7 +326,14 @@ function submitReview(e){
 ================================================================== */
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-function toggleMobileNav(){ document.querySelector('nav').classList.toggle('open'); }
+function toggleMobileNav(){
+  const menu = document.getElementById('mobileMenu');
+  const backdrop = document.getElementById('mobileMenuBackdrop');
+  const opening = !menu.classList.contains('open');
+  menu.classList.toggle('open', opening);
+  backdrop.classList.toggle('open', opening);
+  document.body.style.overflow = opening ? 'hidden' : '';
+}
 
 function fakeLogin(e){ e.preventDefault(); closeModal('loginModal'); e.target.reset(); toast('Signed in (demo)'); }
 
