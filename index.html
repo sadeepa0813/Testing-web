@@ -1,104 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NuwaraGo — Nuwara Eliya Travel</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arovia Yathra — Nuwara Eliya Travel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <header class="topbar">
-  <a class="brand" href="#home"><span>NG</span><div>Nuwara<span>Go</span><small>Explore • Stay • Experience</small></div></a>
+  <a class="brand" href="#home">
+    <span class="brand-mark">AY</span>
+    <div class="brand-word">Arovia<span>Yathra</span><small>Explore • Stay • Experience</small></div>
+  </a>
   <nav>
-    <a href="#stays">Stays</a><a href="#tours">Tours</a><a href="#vehicles">Vehicles</a><a href="#places">Places</a>
+    <a href="#stays">Stays</a><a href="#tours">Tours</a><a href="#vehicles">Vehicles</a><a href="#places">Places</a><a href="#reviews">Reviews</a>
   </nav>
-  <div class="top-actions"><button class="outline" onclick="openModal('loginModal')">Sign in</button><button class="admin-btn" onclick="openModal('adminLoginModal')">Admin</button></div>
+  <div class="top-actions">
+    <button class="outline" onclick="openModal('loginModal')">Sign in</button>
+    <button class="admin-btn" onclick="openModal('adminLoginModal')">Admin</button>
+  </div>
+  <button class="mobile-nav-toggle" onclick="toggleMobileNav()">☰</button>
 </header>
 
 <main id="home">
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">YOUR Nuwara Eliya TRIP, ALL IN ONE PLACE</p>
-    <h1>Stay. Ride.<br><em>Explore.</em></h1>
-    <p class="lead">Discover beautiful stays, private vehicles and curated 1–2 day trips around the Little England of Sri Lanka.</p>
-    <div class="hero-actions"><a class="btn" href="#tours">Explore trips →</a><a class="text-btn" href="#stays">Find a stay</a></div>
-    <div class="trust"><span>★ 4.9</span><span>•</span><span>Verified local partners</span><span>•</span><span>24/7 support</span></div>
-  </div>
-  <div class="hero-card">
-    <div class="mountain"></div>
-    <div class="hero-overlay">
-      <span class="pill">POPULAR</span>
-      <h3>2 Days in Nuwara Eliya</h3><p>Stay + vehicle + guided route</p>
-      <strong>From Rs. 24,900</strong>
+
+  <section class="hero">
+    <div class="mist-layers" aria-hidden="true">
+      <svg class="mist-mountains" viewBox="0 0 1200 500" preserveAspectRatio="none">
+        <path class="peak peak-back" d="M0,320 L150,180 L320,300 L520,120 L760,280 L980,160 L1200,300 L1200,500 L0,500 Z"/>
+        <path class="peak peak-mid" d="M0,380 L220,260 L420,360 L640,220 L880,360 L1080,260 L1200,340 L1200,500 L0,500 Z"/>
+        <path class="peak peak-front" d="M0,430 L180,340 L400,420 L660,330 L900,430 L1200,370 L1200,500 L0,500 Z"/>
+        <ellipse class="fog fog-a" cx="220" cy="330" rx="260" ry="34"/>
+        <ellipse class="fog fog-b" cx="760" cy="290" rx="320" ry="40"/>
+        <ellipse class="fog fog-c" cx="1000" cy="380" rx="240" ry="30"/>
+      </svg>
     </div>
-  </div>
-</section>
+    <div class="hero-copy">
+      <p class="eyebrow">1,868M ABOVE SEA LEVEL — NUWARA ELIYA</p>
+      <h1>Stay. Ride.<br><em>Explore.</em></h1>
+      <p class="lead">Arovia Yathra connects you to handpicked stays, private vehicles and guided 1–2 day trips through the misty tea country of Sri Lanka's Little England.</p>
+      <div class="hero-actions"><a class="btn" href="#tours">Explore trips →</a><a class="text-btn" href="#stays">Find a stay</a></div>
+      <div class="trust"><span>★ 4.9</span><span>•</span><span>Verified local partners</span><span>•</span><span>24/7 support</span></div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-overlay">
+        <span class="pill">POPULAR</span>
+        <h3>2 Days in Nuwara Eliya</h3><p>Stay + vehicle + guided route</p>
+        <strong>From Rs. 24,900</strong>
+      </div>
+    </div>
+  </section>
 
-<section class="search-box">
-  <div><label>WHERE</label><input id="searchPlace" placeholder="Nuwara Eliya"></div>
-  <div><label>CHECK IN</label><input id="checkIn" type="date"></div>
-  <div><label>CHECK OUT</label><input id="checkOut" type="date"></div>
-  <div><label>GUESTS</label><select id="guests"><option>2 Guests</option><option>3 Guests</option><option>4 Guests</option><option>5+ Guests</option></select></div>
-  <button class="btn" onclick="searchStays()">Search</button>
-</section>
+  <section class="search-box">
+    <div><label>WHERE</label><input id="searchPlace" placeholder="Nuwara Eliya"></div>
+    <div><label>CHECK IN</label><input id="checkIn" type="date"></div>
+    <div><label>CHECK OUT</label><input id="checkOut" type="date"></div>
+    <div><label>GUESTS</label>
+      <select id="guests"><option>2 Guests</option><option>3 Guests</option><option>4 Guests</option><option>5+ Guests</option></select>
+    </div>
+    <button class="btn" onclick="searchStays()">Search</button>
+  </section>
 
-<section class="section" id="stays">
-  <div class="section-head"><div><p class="eyebrow">HANDPICKED</p><h2>Places to stay</h2></div><a href="#" onclick="filterCards('stay');return false">View all →</a></div>
-  <div class="grid cards">
-    <article class="card stay" data-name="Hill Breeze Guest House"><div class="photo p1"><span class="tag">Guest favorite</span></div><div class="card-body"><div class="row"><h3>Hill Breeze Guest House</h3><span>★ 4.8</span></div><p>Quiet hillside • 1.2 km from town</p><div class="price">Rs. 8,500 <small>/ night</small></div><button class="small-btn" onclick="bookStay('Hill Breeze Guest House',8500)">Book now</button></div></article>
-    <article class="card stay" data-name="Lakeview Cottage"><div class="photo p2"></div><div class="card-body"><div class="row"><h3>Lakeview Cottage</h3><span>★ 4.9</span></div><p>Gregory Lake area • Breakfast included</p><div class="price">Rs. 12,000 <small>/ night</small></div><button class="small-btn" onclick="bookStay('Lakeview Cottage',12000)">Book now</button></div></article>
-    <article class="card stay" data-name="Tea Garden Villa"><div class="photo p3"></div><div class="card-body"><div class="row"><h3>Tea Garden Villa</h3><span>★ 4.7</span></div><p>Tea estate view • Family friendly</p><div class="price">Rs. 15,500 <small>/ night</small></div><button class="small-btn" onclick="bookStay('Tea Garden Villa',15500)">Book now</button></div></article>
-  </div>
-</section>
+  <section class="section" id="stays">
+    <div class="section-head">
+      <div><p class="eyebrow">HANDPICKED</p><h2>Places to stay</h2></div>
+      <div class="filter-tabs" id="stayFilterTabs">
+        <button class="filter-tab active" data-filter="all" onclick="filterStays('all',this)">All</button>
+        <button class="filter-tab" data-filter="lake" onclick="filterStays('lake',this)">Lake view</button>
+        <button class="filter-tab" data-filter="hill" onclick="filterStays('hill',this)">Hillside</button>
+        <button class="filter-tab" data-filter="estate" onclick="filterStays('estate',this)">Tea estate</button>
+      </div>
+    </div>
+    <div class="grid cards" id="stayGrid"></div>
+    <p class="empty-note" id="stayEmpty" hidden>No stays match your search. Try a different keyword.</p>
+  </section>
 
-<section class="dark-section" id="tours">
-  <div class="section-head light"><div><p class="eyebrow">CURATED BY LOCALS</p><h2>Explore Nuwara Eliya</h2></div><span>1–2 day experiences</span></div>
-  <div class="tour-grid">
-    <article class="tour"><div class="tour-img t1"></div><div><span class="pill">1 DAY</span><h3>Little England Highlights</h3><p>Gregory Lake • Tea factory • Lover's Leap • City</p><div class="tour-bottom"><b>Rs. 12,900 <small>/ group</small></b><button onclick="bookTour('Little England Highlights',12900)">Choose</button></div></div></article>
-    <article class="tour"><div class="tour-img t2"></div><div><span class="pill">2 DAYS</span><h3>Misty Mountains Escape</h3><p>Hakgala • Ramboda • Tea estates • Waterfalls • Sunrise</p><div class="tour-bottom"><b>Rs. 24,900 <small>/ group</small></b><button onclick="bookTour('Misty Mountains Escape',24900)">Choose</button></div></div></article>
-  </div>
-</section>
+  <section class="dark-section" id="tours">
+    <div class="section-head light">
+      <div><p class="eyebrow">CURATED BY LOCALS</p><h2>Explore Nuwara Eliya</h2></div>
+      <div class="filter-tabs dark" id="tourFilterTabs">
+        <button class="filter-tab active" data-filter="all" onclick="filterTours('all',this)">All</button>
+        <button class="filter-tab" data-filter="1" onclick="filterTours('1',this)">1 Day</button>
+        <button class="filter-tab" data-filter="2" onclick="filterTours('2',this)">2 Days</button>
+      </div>
+    </div>
+    <div class="tour-grid" id="tourGrid"></div>
+  </section>
 
-<section class="section" id="vehicles">
-  <div class="section-head"><div><p class="eyebrow">GET AROUND</p><h2>Private vehicles</h2></div><span>Trusted local drivers</span></div>
-  <div class="vehicle-grid">
-    <div class="vehicle"><div class="car-icon">🚗</div><div><h3>Car + Driver</h3><p>1–3 guests • Comfortable & private</p></div><b>From Rs. 7,500/day</b><button onclick="bookVehicle('Car + Driver',7500)">Request</button></div>
-    <div class="vehicle"><div class="car-icon">🚐</div><div><h3>Van + Driver</h3><p>4–10 guests • Ideal for families</p></div><b>From Rs. 11,500/day</b><button onclick="bookVehicle('Van + Driver',11500)">Request</button></div>
-  </div>
-</section>
+  <section class="section" id="vehicles">
+    <div class="section-head"><div><p class="eyebrow">GET AROUND</p><h2>Private vehicles</h2></div><span>Trusted local drivers</span></div>
+    <div class="vehicle-grid" id="vehicleGrid"></div>
+  </section>
 
-<section class="section places" id="places">
-  <div class="section-head"><div><p class="eyebrow">DON'T MISS</p><h2>Must-see places</h2></div></div>
-  <div class="place-grid">
-    <div class="place"><div class="place-img l1"></div><h3>Gregory Lake</h3><p>Relax, cycle or enjoy the view.</p></div>
-    <div class="place"><div class="place-img l2"></div><h3>Tea Country</h3><p>Walk through misty tea estates.</p></div>
-    <div class="place"><div class="place-img l3"></div><h3>Ramboda Falls</h3><p>A scenic waterfall stop.</p></div>
-    <div class="place"><div class="place-img l4"></div><h3>Hakgala</h3><p>Cool mountain gardens and trails.</p></div>
-  </div>
-</section>
+  <section class="section places" id="places">
+    <div class="section-head"><div><p class="eyebrow">DON'T MISS</p><h2>Must-see places</h2></div><span>Marked by elevation</span></div>
+    <div class="place-grid" id="placeGrid"></div>
+  </section>
 
-<section class="cta"><p class="eyebrow">LET US PLAN IT</p><h2>Tell us what kind of trip you want.</h2><p>We'll connect your stay, transport and itinerary into one simple booking.</p><button class="btn" onclick="openModal('tripModal')">Plan my trip →</button></section>
+  <section class="section reviews-section" id="reviews">
+    <div class="section-head">
+      <div><p class="eyebrow">TRAVELER STORIES</p><h2>What guests say</h2></div>
+      <button class="outline" onclick="openReviewModal()">Write a review</button>
+    </div>
+    <div class="review-summary" id="reviewSummary"></div>
+    <div class="review-grid" id="reviewGrid"></div>
+  </section>
+
+  <section class="cta"><p class="eyebrow">LET US PLAN IT</p><h2>Tell us what kind of trip you want.</h2><p>We'll connect your stay, transport and itinerary into one simple booking.</p><button class="btn" onclick="openModal('tripModal')">Plan my trip →</button></section>
+
 </main>
 
-<footer><div class="brand"><span>NG</span><div>NuwaraGo<small>Explore • Stay • Experience</small></div></div><p>© 2026 NuwaraGo Demo • Nuwara Eliya, Sri Lanka</p><div><a href="#stays">Stays</a><a href="#tours">Tours</a><a href="#vehicles">Vehicles</a></div></footer>
+<footer>
+  <div class="brand"><span class="brand-mark">AY</span><div>Arovia Yathra<small>Explore • Stay • Experience</small></div></div>
+  <p>© 2026 Arovia Yathra Demo • Nuwara Eliya, Sri Lanka</p>
+  <div><a href="#stays">Stays</a><a href="#tours">Tours</a><a href="#vehicles">Vehicles</a><a href="#reviews">Reviews</a></div>
+</footer>
 
-<div class="modal" id="bookingModal"><div class="modal-box"><button class="close" onclick="closeModal('bookingModal')">×</button><p class="eyebrow">BOOKING REQUEST</p><h2 id="modalTitle">Your booking</h2><p id="modalDesc"></p><form onsubmit="submitBooking(event)"><input id="name" required placeholder="Your name"><input id="phone" required placeholder="Phone number"><input id="date" required type="date"><input id="people" type="number" min="1" value="2" placeholder="Guests"><button class="btn" type="submit">Send booking request</button></form></div></div>
-<div class="modal" id="tripModal"><div class="modal-box"><button class="close" onclick="closeModal('tripModal')">×</button><p class="eyebrow">CUSTOM TRIP</p><h2>Plan my Nuwara Eliya trip</h2><form onsubmit="submitTrip(event)"><input required placeholder="Your name"><input required placeholder="WhatsApp number"><select required><option value="">Trip length</option><option>1 Day</option><option>2 Days / 1 Night</option><option>3 Days / 2 Nights</option></select><select required><option value="">Group size</option><option>1–2</option><option>3–5</option><option>6–10</option><option>10+</option></select><textarea placeholder="What would you like to see?"></textarea><button class="btn">Request my itinerary</button></form></div></div>
-<div class="modal" id="loginModal"><div class="modal-box"><button class="close" onclick="closeModal('loginModal')">×</button><p class="eyebrow">ACCOUNT</p><h2>Sign in</h2><form onsubmit="fakeLogin(event)"><input type="email" required placeholder="Email"><input type="password" required placeholder="Password"><button class="btn">Continue</button></form><p class="note">Demo only — Firebase Authentication will be connected in the next phase.</p></div></div>
+<!-- BOOKING / CHECKOUT MODAL -->
+<div class="modal" id="bookingModal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal('bookingModal')">×</button>
+    <div class="booking-step" id="bookingStep1">
+      <p class="eyebrow">BOOKING REQUEST</p>
+      <h2 id="modalTitle">Your booking</h2>
+      <p id="modalDesc"></p>
+      <form id="bookingForm" onsubmit="goToPayment(event)">
+        <input id="bkName" required placeholder="Your name">
+        <input id="bkPhone" required placeholder="Phone number">
+        <input id="bkDate" required type="date">
+        <input id="bkPeople" type="number" min="1" value="2" placeholder="Guests">
+        <button class="btn" type="submit">Continue to payment →</button>
+      </form>
+    </div>
+    <div class="booking-step" id="bookingStep2" hidden>
+      <p class="eyebrow">SECURE PAYMENT (DEMO)</p>
+      <h2>Confirm &amp; pay</h2>
+      <div class="pay-summary" id="paySummary"></div>
+      <form id="paymentForm" onsubmit="confirmPayment(event)">
+        <input required placeholder="Cardholder name">
+        <input required placeholder="Card number" maxlength="19" oninput="formatCard(this)">
+        <div class="pay-row"><input required placeholder="MM/YY" maxlength="5"><input required placeholder="CVC" maxlength="3"></div>
+        <button class="btn" type="submit" id="payBtn">Pay now →</button>
+        <button type="button" class="text-btn back-btn" onclick="backToDetails()">← Back to details</button>
+      </form>
+    </div>
+    <div class="booking-step" id="bookingStep3" hidden>
+      <div class="confirm-check">✓</div>
+      <h2>Booking confirmed</h2>
+      <p id="confirmText">Your request has been received.</p>
+      <button class="btn" onclick="closeModal('bookingModal')">Done</button>
+    </div>
+  </div>
+</div>
 
-<div class="modal" id="adminLoginModal"><div class="modal-box admin-login-box"><button class="close" onclick="closeModal('adminLoginModal')">×</button><div class="admin-mark">NG</div><p class="eyebrow">NUWARAGO ADMIN</p><h2>Welcome back</h2><p class="admin-sub">Demo control center for properties, bookings, vehicles and tours.</p><form onsubmit="adminLogin(event)"><input type="email" value="admin@nuwarago.demo" required><input type="password" value="admin123" required><button class="btn">Enter dashboard →</button></form><div class="demo-credentials"><b>Demo credentials</b><br>admin@nuwarago.demo<br>admin123</div></div></div>
+<!-- CUSTOM TRIP MODAL -->
+<div class="modal" id="tripModal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal('tripModal')">×</button>
+    <p class="eyebrow">CUSTOM TRIP</p>
+    <h2>Plan my Nuwara Eliya trip</h2>
+    <form onsubmit="submitTrip(event)">
+      <input id="tripName" required placeholder="Your name">
+      <input id="tripPhone" required placeholder="WhatsApp number">
+      <select id="tripLength" required><option value="">Trip length</option><option>1 Day</option><option>2 Days / 1 Night</option><option>3 Days / 2 Nights</option></select>
+      <select id="tripGroup" required><option value="">Group size</option><option>1–2</option><option>3–5</option><option>6–10</option><option>10+</option></select>
+      <textarea id="tripNotes" placeholder="What would you like to see?"></textarea>
+      <button class="btn" type="submit">Request my itinerary</button>
+    </form>
+  </div>
+</div>
 
+<!-- REVIEW MODAL -->
+<div class="modal" id="reviewModal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal('reviewModal')">×</button>
+    <p class="eyebrow">SHARE YOUR TRIP</p>
+    <h2>Write a review</h2>
+    <form onsubmit="submitReview(event)">
+      <input id="rvName" required placeholder="Your name">
+      <select id="rvFor" required><option value="">What was this about?</option></select>
+      <div class="star-input" id="rvStars">
+        <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+      </div>
+      <textarea id="rvText" required placeholder="Tell other travelers about your experience"></textarea>
+      <button class="btn" type="submit">Post review</button>
+    </form>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal('loginModal')">×</button>
+    <p class="eyebrow">ACCOUNT</p>
+    <h2>Sign in</h2>
+    <form onsubmit="fakeLogin(event)">
+      <input type="email" required placeholder="Email">
+      <input type="password" required placeholder="Password">
+      <button class="btn">Continue</button>
+    </form>
+    <p class="note">Demo only — no account data leaves your browser.</p>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal" id="adminLoginModal">
+  <div class="modal-box admin-login-box">
+    <button class="close" onclick="closeModal('adminLoginModal')">×</button>
+    <div class="admin-mark">AY</div>
+    <p class="eyebrow">AROVIA YATHRA ADMIN</p>
+    <h2>Welcome back</h2>
+    <p class="admin-sub">Demo control center for properties, bookings, vehicles and tours.</p>
+    <form onsubmit="adminLogin(event)">
+      <input id="adminEmail" type="email" placeholder="admin@aroviayathra.demo" required>
+      <input id="adminPass" type="password" placeholder="Password" required>
+      <button class="btn">Enter dashboard →</button>
+    </form>
+    <div class="demo-credentials"><b>Demo credentials</b><br>admin@aroviayathra.demo<br>admin123</div>
+  </div>
+</div>
+
+<!-- ITEM FORM MODAL (admin add/edit) -->
+<div class="modal" id="itemFormModal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal('itemFormModal')">×</button>
+    <p class="eyebrow" id="itemFormEyebrow">ADD ITEM</p>
+    <h2 id="itemFormTitle">Add property</h2>
+    <form id="itemForm" onsubmit="saveItemForm(event)"></form>
+  </div>
+</div>
+
+<!-- ============ ADMIN APP ============ -->
 <div class="admin-app" id="adminApp">
-<aside class="admin-sidebar"><div class="admin-brand"><span>NG</span><div>NuwaraGo<small>ADMIN CONSOLE</small></div></div><div class="admin-user"><div class="avatar">SA</div><div><b>Site Admin</b><small>Super Admin</small></div></div>
-<nav class="admin-nav">
-<button class="active" onclick="adminTab('Overview',this)">▦ <span>Overview</span></button><button onclick="adminTab('Bookings',this)">◷ <span>Bookings</span><b>8</b></button><button onclick="adminTab('Properties',this)">⌂ <span>Properties</span></button><button onclick="adminTab('Vehicles',this)">▱ <span>Vehicles</span></button><button onclick="adminTab('Tours',this)">✦ <span>Tour Packages</span></button><button onclick="adminTab('Customers',this)">♙ <span>Customers</span></button><button onclick="adminTab('Settings',this)">⚙ <span>Settings</span></button></nav><button class="logout-admin" onclick="logoutAdmin()">← Exit dashboard</button></aside>
-<section class="admin-main"><header class="admin-header"><div><button class="mobile-admin-menu" onclick="toggleAdminSide()">☰</button><span class="admin-breadcrumb">Dashboard / </span><b id="adminPageTitle">Overview</b></div><div class="admin-head-right"><span class="status-dot"></span> System online <button class="admin-profile">SA</button></div></header>
-<div class="admin-content" id="adminContent"><div class="admin-title-row"><div><p class="eyebrow">TUESDAY • 18 AUG 2026</p><h1>Good morning, Sadeepa 👋</h1><p>Here’s what’s happening with NuwaraGo today.</p></div><button class="admin-primary" onclick="toast('Property form opened (Demo)')">＋ Add property</button></div>
-<div class="stats"><div class="stat"><small>Total bookings</small><strong>128</strong><span class="up">↑ 14.2%</span><p>vs last month</p></div><div class="stat"><small>Revenue</small><strong>Rs. 486,500</strong><span class="up">↑ 18.6%</span><p>this month</p></div><div class="stat"><small>Properties</small><strong>32</strong><span class="neutral">+4</span><p>active partners</p></div><div class="stat"><small>Customers</small><strong>1,284</strong><span class="up">↑ 9.8%</span><p>registered users</p></div></div>
-<div class="admin-grid-two"><div class="panel"><div class="panel-head"><div><h3>Recent bookings</h3><p>Latest customer requests</p></div></div><div class="booking-table"><div class="table-row table-head"><span>Customer</span><span>Service</span><span>Date</span><span>Status</span></div><div class="table-row"><span><b>Kasun P.</b><small>+94 77 123 4567</small></span><span>Lakeview Cottage</span><span>22 Aug</span><em class="confirmed">Confirmed</em></div><div class="table-row"><span><b>Emily R.</b><small>+44 7700 123456</small></span><span>2-Day Escape</span><span>24 Aug</span><em class="pending">Pending</em></div><div class="table-row"><span><b>Tharindu S.</b><small>+94 71 555 8899</small></span><span>Van + Driver</span><span>25 Aug</span><em class="confirmed">Confirmed</em></div></div></div><div class="panel"><div class="panel-head"><div><h3>Revenue</h3><p>Last 7 days</p></div></div><div class="chart"><div class="bars"><i style="height:42%"></i><i style="height:62%"></i><i style="height:48%"></i><i style="height:78%"></i><i style="height:58%"></i><i style="height:91%"></i><i style="height:70%"></i></div><div class="chart-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div></div></div></div>
-<div class="panel quick-panel"><div class="panel-head"><div><h3>Partner activity</h3><p>Manage your tourism network</p></div><span class="mini-live">● Live</span></div><div class="activity-grid"><div>🏠<b>32</b><small>Properties</small></div><div>🚐<b>18</b><small>Vehicles</small></div><div>🧭<b>12</b><small>Tour packages</small></div><div>⭐<b>4.8</b><small>Average rating</small></div></div></div>
-</div></section></div>
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><span class="brand-mark">AY</span><div>Arovia Yathra<small>ADMIN CONSOLE</small></div></div>
+    <div class="admin-user"><div class="avatar">SA</div><div><b>Site Admin</b><small>Super Admin</small></div></div>
+    <nav class="admin-nav">
+      <button class="active" onclick="adminTab('Overview',this)">▦ <span>Overview</span></button>
+      <button onclick="adminTab('Bookings',this)">◷ <span>Bookings</span><b id="navBookingCount">0</b></button>
+      <button onclick="adminTab('Properties',this)">⌂ <span>Properties</span></button>
+      <button onclick="adminTab('Vehicles',this)">▱ <span>Vehicles</span></button>
+      <button onclick="adminTab('Tours',this)">✦ <span>Tour Packages</span></button>
+      <button onclick="adminTab('Reviews',this)">☆ <span>Reviews</span></button>
+      <button onclick="adminTab('Customers',this)">♙ <span>Customers</span></button>
+      <button onclick="adminTab('Settings',this)">⚙ <span>Settings</span></button>
+    </nav>
+    <button class="logout-admin" onclick="logoutAdmin()">← Exit dashboard</button>
+  </aside>
+
+  <section class="admin-main">
+    <header class="admin-header">
+      <div><button class="mobile-admin-menu" onclick="toggleAdminSide()">☰</button><span class="admin-breadcrumb">Dashboard / </span><b id="adminPageTitle">Overview</b></div>
+      <div class="admin-head-right"><span class="status-dot"></span> System online <button class="admin-profile">SA</button></div>
+    </header>
+
+    <div class="admin-content" id="adminContent">
+
+      <!-- OVERVIEW -->
+      <div class="admin-panel" id="panel-Overview">
+        <div class="admin-title-row">
+          <div><p class="eyebrow" id="adminDateLine">TODAY</p><h1>Good day, Sadeepa 👋</h1><p>Here's what's happening with Arovia Yathra today.</p></div>
+          <button class="admin-primary" onclick="openItemForm('property')">＋ Add property</button>
+        </div>
+        <div class="stats" id="statsRow"></div>
+        <div class="admin-grid-two">
+          <div class="panel">
+            <div class="panel-head"><div><h3>Recent bookings</h3><p>Latest customer requests</p></div></div>
+            <div class="booking-table" id="recentBookingsTable"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><h3>Revenue</h3><p>Last 7 days</p></div></div>
+            <canvas id="revenueChart" width="380" height="200"></canvas>
+          </div>
+        </div>
+        <div class="admin-grid-two">
+          <div class="panel">
+            <div class="panel-head"><div><h3>Booking status</h3><p>Breakdown of all requests</p></div></div>
+            <div class="donut-wrap">
+              <canvas id="statusDonut" width="180" height="180"></canvas>
+              <div class="donut-legend" id="donutLegend"></div>
+            </div>
+          </div>
+          <div class="panel quick-panel">
+            <div class="panel-head"><div><h3>Partner activity</h3><p>Manage your tourism network</p></div><span class="mini-live">● Live</span></div>
+            <div class="activity-grid" id="activityGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div class="admin-panel" id="panel-Bookings" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">MANAGE</p><h1>Bookings</h1><p>Confirm, cancel or review every request.</p></div></div>
+        <div class="admin-filter-row" id="bookingStatusFilter">
+          <button class="filter-tab active" data-status="all" onclick="filterBookings('all',this)">All</button>
+          <button class="filter-tab" data-status="Pending" onclick="filterBookings('Pending',this)">Pending</button>
+          <button class="filter-tab" data-status="Confirmed" onclick="filterBookings('Confirmed',this)">Confirmed</button>
+          <button class="filter-tab" data-status="Cancelled" onclick="filterBookings('Cancelled',this)">Cancelled</button>
+        </div>
+        <div class="panel"><div class="booking-table full" id="allBookingsTable"></div></div>
+      </div>
+
+      <!-- PROPERTIES -->
+      <div class="admin-panel" id="panel-Properties" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">INVENTORY</p><h1>Properties</h1><p>Everything shown on the public Stays section.</p></div><button class="admin-primary" onclick="openItemForm('property')">＋ Add property</button></div>
+        <div class="admin-item-grid" id="adminPropertyGrid"></div>
+      </div>
+
+      <!-- VEHICLES -->
+      <div class="admin-panel" id="panel-Vehicles" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">INVENTORY</p><h1>Vehicles</h1><p>Everything shown on the public Vehicles section.</p></div><button class="admin-primary" onclick="openItemForm('vehicle')">＋ Add vehicle</button></div>
+        <div class="admin-item-grid" id="adminVehicleGrid"></div>
+      </div>
+
+      <!-- TOURS -->
+      <div class="admin-panel" id="panel-Tours" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">INVENTORY</p><h1>Tour packages</h1><p>Everything shown on the public Tours section.</p></div><button class="admin-primary" onclick="openItemForm('tour')">＋ Add tour</button></div>
+        <div class="admin-item-grid" id="adminTourGrid"></div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="admin-panel" id="panel-Reviews" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">MODERATE</p><h1>Reviews</h1><p>Everything travelers have posted publicly.</p></div></div>
+        <div class="panel"><div class="review-admin-list" id="adminReviewList"></div></div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="admin-panel" id="panel-Customers" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">PEOPLE</p><h1>Customers</h1><p>Grouped from booking requests.</p></div></div>
+        <div class="panel"><div class="booking-table full customer-table" id="customerTable"></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="admin-panel" id="panel-Settings" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">CONFIGURE</p><h1>Settings</h1><p>Demo settings — stored in this browser only.</p></div></div>
+        <div class="panel settings-panel">
+          <form id="settingsForm" onsubmit="saveSettings(event)">
+            <label>Site name<input id="setSiteName" placeholder="Arovia Yathra"></label>
+            <label>Support phone<input id="setPhone" placeholder="+94 77 000 0000"></label>
+            <label>Currency prefix<input id="setCurrency" placeholder="Rs."></label>
+            <button class="btn" type="submit">Save settings</button>
+          </form>
+          <div class="panel danger-zone">
+            <h3>Reset demo data</h3>
+            <p>Clears everything stored in this browser and restores the original demo content.</p>
+            <button class="danger-btn" onclick="resetDemoData()">Reset all data</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
 <div id="toast"></div>
+
 <script src="script.js"></script>
 </body>
 </html>
