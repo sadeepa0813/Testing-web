@@ -20,6 +20,7 @@
     <a href="#stays">Stays</a><a href="#tours">Tours</a><a href="#vehicles">Vehicles</a><a href="#places">Places</a><a href="#reviews">Reviews</a>
   </nav>
   <div class="top-actions">
+    <button class="wishlist-btn" onclick="openModal('wishlistModal')" aria-label="Wishlist">♥ <b id="wishlistCount">0</b></button>
     <button class="outline" onclick="openModal('loginModal')">Sign in</button>
     <button class="admin-btn" onclick="openModal('adminLoginModal')">Admin</button>
   </div>
@@ -40,6 +41,7 @@
     <a href="#reviews" onclick="toggleMobileNav()">Reviews</a>
   </nav>
   <div class="mobile-menu-actions">
+    <button class="outline" onclick="toggleMobileNav(); openModal('wishlistModal')">♥ Wishlist (<span id="wishlistCountMobile">0</span>)</button>
     <button class="outline" onclick="toggleMobileNav(); openModal('loginModal')">Sign in</button>
     <button class="admin-btn" onclick="toggleMobileNav(); openModal('adminLoginModal')">Admin</button>
   </div>
@@ -150,8 +152,7 @@
       <form id="bookingForm" onsubmit="goToPayment(event)">
         <input id="bkName" required placeholder="Your name">
         <input id="bkPhone" required placeholder="Phone number">
-        <input id="bkDate" required type="date">
-        <input id="bkPeople" type="number" min="1" value="2" placeholder="Guests">
+        <div id="bookingFields"></div>
         <button class="btn" type="submit">Continue to payment →</button>
       </form>
     </div>
@@ -159,6 +160,11 @@
       <p class="eyebrow">SECURE PAYMENT (DEMO)</p>
       <h2>Confirm &amp; pay</h2>
       <div class="pay-summary" id="paySummary"></div>
+      <div class="coupon-row">
+        <input id="couponCode" placeholder="Promo code (try TEA10)">
+        <button type="button" class="outline" onclick="applyCoupon()">Apply</button>
+      </div>
+      <p class="coupon-msg" id="couponMsg"></p>
       <form id="paymentForm" onsubmit="confirmPayment(event)">
         <input required placeholder="Cardholder name">
         <input required placeholder="Card number" maxlength="19" oninput="formatCard(this)">
@@ -171,8 +177,22 @@
       <div class="confirm-check">✓</div>
       <h2>Booking confirmed</h2>
       <p id="confirmText">Your request has been received.</p>
-      <button class="btn" onclick="closeModal('bookingModal')">Done</button>
+      <div class="mock-message" id="mockMessage"></div>
+      <div class="confirm-actions">
+        <button class="outline" onclick="downloadReceipt()">⬇ Download receipt</button>
+        <button class="btn" onclick="closeModal('bookingModal')">Done</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- WISHLIST MODAL -->
+<div class="modal" id="wishlistModal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal('wishlistModal')">×</button>
+    <p class="eyebrow">SAVED BY YOU</p>
+    <h2>Your wishlist</h2>
+    <div class="wishlist-list" id="wishlistList"></div>
   </div>
 </div>
 
@@ -239,7 +259,11 @@
       <input id="adminPass" type="password" placeholder="Password" required>
       <button class="btn">Enter dashboard →</button>
     </form>
-    <div class="demo-credentials"><b>Demo credentials</b><br>admin@aroviayathra.demo<br>admin123</div>
+    <div class="role-quickfill">
+      <button type="button" onclick="quickFillAdmin('super')">Use Super Admin</button>
+      <button type="button" onclick="quickFillAdmin('staff')">Use Staff</button>
+    </div>
+    <div class="demo-credentials"><b>Super Admin</b><br>admin@aroviayathra.demo / admin123<br><br><b>Staff (limited access)</b><br>staff@aroviayathra.demo / staff123</div>
   </div>
 </div>
 
@@ -257,7 +281,7 @@
 <div class="admin-app" id="adminApp">
   <aside class="admin-sidebar">
     <div class="admin-brand"><span class="brand-mark">AY</span><div>Arovia Yathra<small>ADMIN CONSOLE</small></div></div>
-    <div class="admin-user"><div class="avatar">SA</div><div><b>Site Admin</b><small>Super Admin</small></div></div>
+    <div class="admin-user"><div class="avatar" id="adminAvatar">SA</div><div><b id="adminNameLabel">Site Admin</b><small id="adminRoleLabel">Super Admin</small></div></div>
     <nav class="admin-nav">
       <button class="active" onclick="adminTab('Overview',this)">▦ <span>Overview</span></button>
       <button onclick="adminTab('Bookings',this)">◷ <span>Bookings</span><b id="navBookingCount">0</b></button>
@@ -266,7 +290,7 @@
       <button onclick="adminTab('Tours',this)">✦ <span>Tour Packages</span></button>
       <button onclick="adminTab('Reviews',this)">☆ <span>Reviews</span></button>
       <button onclick="adminTab('Customers',this)">♙ <span>Customers</span></button>
-      <button onclick="adminTab('Settings',this)">⚙ <span>Settings</span></button>
+      <button id="settingsNavBtn" onclick="adminTab('Settings',this)">⚙ <span>Settings</span></button>
     </nav>
     <button class="logout-admin" onclick="logoutAdmin()">← Exit dashboard</button>
   </aside>
@@ -274,7 +298,14 @@
   <section class="admin-main">
     <header class="admin-header">
       <div><button class="mobile-admin-menu" onclick="toggleAdminSide()">☰</button><span class="admin-breadcrumb">Dashboard / </span><b id="adminPageTitle">Overview</b></div>
-      <div class="admin-head-right"><span class="status-dot"></span> System online <button class="admin-profile">SA</button></div>
+      <div class="admin-head-right">
+        <input class="admin-search" id="adminGlobalSearch" placeholder="Search bookings, guests, properties…" oninput="globalAdminSearch(this.value)">
+        <div class="notif-wrap">
+          <button class="notif-bell" onclick="toggleNotifPanel()">🔔 <b id="notifCount">0</b></button>
+          <div class="notif-panel" id="notifPanel" hidden></div>
+        </div>
+        <span class="status-dot"></span> System online <button class="admin-profile" id="adminProfileBtn">SA</button>
+      </div>
     </header>
 
     <div class="admin-content" id="adminContent">
@@ -311,9 +342,15 @@
         </div>
       </div>
 
+      <!-- GLOBAL SEARCH RESULTS -->
+      <div class="admin-panel" id="panel-Search" hidden>
+        <div class="admin-title-row"><div><p class="eyebrow">SEARCH</p><h1>Results for "<span id="searchQueryLabel"></span>"</h1><p>Matches across bookings, properties, vehicles, tours and customers.</p></div></div>
+        <div class="panel"><div id="searchResultsList"></div></div>
+      </div>
+
       <!-- BOOKINGS -->
       <div class="admin-panel" id="panel-Bookings" hidden>
-        <div class="admin-title-row"><div><p class="eyebrow">MANAGE</p><h1>Bookings</h1><p>Confirm, cancel or review every request.</p></div></div>
+        <div class="admin-title-row"><div><p class="eyebrow">MANAGE</p><h1>Bookings</h1><p>Confirm, cancel or review every request.</p></div><button class="admin-primary" onclick="exportBookingsCSV()">⬇ Export CSV</button></div>
         <div class="admin-filter-row" id="bookingStatusFilter">
           <button class="filter-tab active" data-status="all" onclick="filterBookings('all',this)">All</button>
           <button class="filter-tab" data-status="Pending" onclick="filterBookings('Pending',this)">Pending</button>
@@ -325,7 +362,7 @@
 
       <!-- PROPERTIES -->
       <div class="admin-panel" id="panel-Properties" hidden>
-        <div class="admin-title-row"><div><p class="eyebrow">INVENTORY</p><h1>Properties</h1><p>Everything shown on the public Stays section.</p></div><button class="admin-primary" onclick="openItemForm('property')">＋ Add property</button></div>
+        <div class="admin-title-row"><div><p class="eyebrow">INVENTORY</p><h1>Properties</h1><p>Drag cards to reorder how they appear on the public site.</p></div><button class="admin-primary" onclick="openItemForm('property')">＋ Add property</button></div>
         <div class="admin-item-grid" id="adminPropertyGrid"></div>
       </div>
 
@@ -349,7 +386,7 @@
 
       <!-- CUSTOMERS -->
       <div class="admin-panel" id="panel-Customers" hidden>
-        <div class="admin-title-row"><div><p class="eyebrow">PEOPLE</p><h1>Customers</h1><p>Grouped from booking requests.</p></div></div>
+        <div class="admin-title-row"><div><p class="eyebrow">PEOPLE</p><h1>Customers</h1><p>Grouped from booking requests.</p></div><button class="admin-primary" onclick="exportCustomersCSV()">⬇ Export CSV</button></div>
         <div class="panel"><div class="booking-table full customer-table" id="customerTable"></div></div>
       </div>
 
