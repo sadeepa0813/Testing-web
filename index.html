@@ -23,8 +23,27 @@
     <button class="outline" onclick="openModal('loginModal')">Sign in</button>
     <button class="admin-btn" onclick="openModal('adminLoginModal')">Admin</button>
   </div>
-  <button class="mobile-nav-toggle" onclick="toggleMobileNav()">☰</button>
+  <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Open menu">☰</button>
 </header>
+
+<div class="mobile-menu-backdrop" id="mobileMenuBackdrop" onclick="toggleMobileNav()"></div>
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu-head">
+    <span class="brand-mark">AY</span>
+    <button class="mobile-menu-close" onclick="toggleMobileNav()" aria-label="Close menu">×</button>
+  </div>
+  <nav class="mobile-menu-links">
+    <a href="#stays" onclick="toggleMobileNav()">Stays</a>
+    <a href="#tours" onclick="toggleMobileNav()">Tours</a>
+    <a href="#vehicles" onclick="toggleMobileNav()">Vehicles</a>
+    <a href="#places" onclick="toggleMobileNav()">Places</a>
+    <a href="#reviews" onclick="toggleMobileNav()">Reviews</a>
+  </nav>
+  <div class="mobile-menu-actions">
+    <button class="outline" onclick="toggleMobileNav(); openModal('loginModal')">Sign in</button>
+    <button class="admin-btn" onclick="toggleMobileNav(); openModal('adminLoginModal')">Admin</button>
+  </div>
+</div>
 
 <main id="home">
 
