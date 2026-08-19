@@ -6,7 +6,19 @@
 
 const LS = {
   properties:'ay_properties', vehicles:'ay_vehicles', tours:'ay_tours',
-  bookings:'ay_bookings', reviews:'ay_reviews', settings:'ay_settings', seeded:'ay_seeded'
+  bookings:'ay_bookings', reviews:'ay_reviews', settings:'ay_settings', seeded:'ay_seeded',
+  wishlist:'ay_wishlist'
+};
+
+const COUPONS = {
+  'TEA10': {type:'percent', value:10, label:'10% off'},
+  'FOG20': {type:'percent', value:20, label:'20% off'},
+  'WELCOME500': {type:'flat', value:500, label:'Rs. 500 off'}
+};
+
+const ADMIN_ACCOUNTS = {
+  'admin@aroviayathra.demo': {pass:'admin123', role:'Super Admin', name:'Site Admin', avatar:'SA'},
+  'staff@aroviayathra.demo': {pass:'staff123', role:'Staff', name:'Staff Member', avatar:'ST'}
 };
 
 function load(key, fallback){
@@ -69,6 +81,8 @@ let currentRating = 5;
 let stayFilter = 'all';
 let tourFilter = 'all';
 let bookingStatusFilterVal = 'all';
+let currentAdminRole = 'Super Admin';
+let preSearchTabBtn = null;
 
 const PLACES = [
   {name:'Tea Country Estates', elev:'1,900M', desc:'Walk through misty tea estates.', cls:'l2'},
@@ -82,12 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
   seedData(false);
   applySettingsToPage();
   renderProperties(); renderTours(); renderVehicles(); renderPlaces(); renderReviews();
-  document.getElementById('bkDate') && document.getElementById('bkDate').setAttribute('min', new Date().toISOString().slice(0,10));
+  renderWishlistCounts();
 
   document.getElementById('rvStars').addEventListener('click', e=>{
     if(e.target.tagName !== 'SPAN') return;
     currentRating = +e.target.dataset.v;
     paintStars();
+  });
+
+  document.addEventListener('click', e=>{
+    const panel = document.getElementById('notifPanel');
+    if(panel && !panel.hidden && !e.target.closest('.notif-wrap')) panel.hidden = true;
   });
 });
 
@@ -108,10 +127,12 @@ function renderProperties(){
     return matchesCat && matchesQ;
   });
   const grid = document.getElementById('stayGrid');
+  const wish = load(LS.wishlist, []);
   grid.innerHTML = filtered.map(p => `
     <article class="card stay">
       <div class="photo ${p.photo}">
         ${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}
+        <button class="fav-btn ${isWished('stay',p.id)?'on':''}" onclick="toggleWishlist('stay','${p.id}','${escAttr(p.name)}',${p.price},this)">♥</button>
       </div>
       <div class="card-body">
         <div class="row"><h3>${esc(p.name)}</h3><span>★ ${p.rating}</span></div>
@@ -139,7 +160,9 @@ function renderTours(){
   const list = load(LS.tours, []).filter(t => tourFilter==='all' || String(t.days)===tourFilter);
   document.getElementById('tourGrid').innerHTML = list.map(t=>`
     <article class="tour">
-      <div class="tour-img ${t.photo}"></div>
+      <div class="tour-img ${t.photo}">
+        <button class="fav-btn ${isWished('tour',t.id)?'on':''}" onclick="toggleWishlist('tour','${t.id}','${escAttr(t.name)}',${t.price},this)">♥</button>
+      </div>
       <div>
         <span class="pill">${t.days} DAY${t.days>1?'S':''}</span>
         <h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p>
@@ -165,6 +188,7 @@ function renderVehicles(){
       <div class="car-icon">${v.icon}</div>
       <div><h3>${esc(v.name)}</h3><p>${esc(v.desc)}</p></div>
       <b>From Rs. ${v.price.toLocaleString()}/day</b>
+      <button class="fav-btn ${isWished('vehicle',v.id)?'on':''}" style="position:static;width:32px;height:32px;flex-shrink:0" onclick="toggleWishlist('vehicle','${v.id}','${escAttr(v.name)}',${v.price},this)">♥</button>
       <button onclick="bookVehicle('${v.id}')">Request</button>
     </div>`).join('');
 }
@@ -194,6 +218,46 @@ function renderReviews(){
 }
 
 /* ==================================================================
+   WISHLIST
+================================================================== */
+function isWished(type, id){
+  return load(LS.wishlist, []).some(w=>w.type===type && w.id===id);
+}
+function toggleWishlist(type, id, name, price, btn){
+  let list = load(LS.wishlist, []);
+  const exists = list.some(w=>w.type===type && w.id===id);
+  if(exists){
+    list = list.filter(w=>!(w.type===type && w.id===id));
+    toast('Removed from wishlist');
+  } else {
+    list.push({type, id, name, price});
+    toast('Saved to wishlist ♥');
+  }
+  save(LS.wishlist, list);
+  if(btn) btn.classList.toggle('on', !exists);
+  renderWishlistCounts();
+  if(document.getElementById('wishlistModal').classList.contains('open')) renderWishlistModal();
+}
+function renderWishlistCounts(){
+  const n = load(LS.wishlist, []).length;
+  const a = document.getElementById('wishlistCount'); if(a) a.textContent = n;
+  const b = document.getElementById('wishlistCountMobile'); if(b) b.textContent = n;
+}
+function renderWishlistModal(){
+  const list = load(LS.wishlist, []);
+  document.getElementById('wishlistList').innerHTML = list.map(w=>`
+    <div class="wishlist-item">
+      <div><b>${esc(w.name)}</b><span>Rs. ${w.price.toLocaleString()} • ${w.type}</span></div>
+      <button onclick="removeWishlistItem('${w.type}','${w.id}')">Remove</button>
+    </div>`).join('') || '<p class="empty-note">Tap the ♥ on any stay, tour or vehicle to save it here.</p>';
+}
+function removeWishlistItem(type, id){
+  save(LS.wishlist, load(LS.wishlist,[]).filter(w=>!(w.type===type && w.id===id)));
+  renderWishlistCounts(); renderWishlistModal();
+  renderProperties(); renderTours(); renderVehicles();
+}
+
+/* ==================================================================
    BOOKING + CHECKOUT FLOW
 ================================================================== */
 function bookStay(id){
@@ -217,29 +281,93 @@ function startBooking(type, itemId, itemName, price, desc){
   document.getElementById('bookingStep2').hidden = true;
   document.getElementById('bookingStep3').hidden = true;
   document.getElementById('bookingForm').reset();
+  document.getElementById('couponMsg').textContent = '';
+  document.getElementById('couponCode').value = '';
+  pendingBooking.discount = 0; pendingBooking.coupon = null;
+  renderBookingFields(type);
   openModal('bookingModal');
+}
+
+function renderBookingFields(type){
+  const today = new Date().toISOString().slice(0,10);
+  let html = '';
+  if(type === 'stay'){
+    html = `
+      <div class="field-group">
+        <input id="bkCheckIn" required type="date" min="${today}">
+        <input id="bkCheckOut" required type="date" min="${today}">
+      </div>
+      <p class="field-hint">Check-in and check-out dates — price is calculated per night.</p>
+      <input id="bkPeople" type="number" min="1" value="2" placeholder="Guests">`;
+  } else if(type === 'vehicle'){
+    html = `
+      <div class="field-group">
+        <input id="bkCheckIn" required type="date" min="${today}">
+        <input id="bkCheckOut" required type="date" min="${today}">
+      </div>
+      <p class="field-hint">Rental start and end dates — price is calculated per day.</p>
+      <input id="bkPeople" type="number" min="1" value="2" placeholder="Passengers">`;
+  } else {
+    html = `
+      <input id="bkCheckIn" required type="date" min="${today}">
+      <input id="bkPeople" type="number" min="1" value="2" placeholder="Guests">`;
+  }
+  document.getElementById('bookingFields').innerHTML = html;
 }
 
 function goToPayment(e){
   e.preventDefault();
   const name = document.getElementById('bkName').value.trim();
   const phone = document.getElementById('bkPhone').value.trim();
-  const date = document.getElementById('bkDate').value;
   const guests = +document.getElementById('bkPeople').value || 1;
-  pendingBooking = {...pendingBooking, name, phone, date, guests};
+  const checkIn = document.getElementById('bkCheckIn').value;
+  const checkOut = document.getElementById('bkCheckOut') ? document.getElementById('bkCheckOut').value : '';
 
-  const unit = pendingBooking.type === 'stay' ? guests : 1;
-  const total = pendingBooking.price * (pendingBooking.type==='stay' ? Math.max(1, Math.ceil(guests/2)) : 1);
-  pendingBooking.total = pendingBooking.price; // keep base price as the demo "total" for simplicity/clarity
+  let units = 1, unitLabel = '';
+  if(pendingBooking.type === 'stay' || pendingBooking.type === 'vehicle'){
+    if(checkOut && checkIn && new Date(checkOut) <= new Date(checkIn)){
+      toast('Check-out must be after check-in'); return;
+    }
+    units = checkOut ? Math.max(1, Math.round((new Date(checkOut)-new Date(checkIn))/86400000)) : 1;
+    unitLabel = pendingBooking.type === 'stay' ? `${units} night${units>1?'s':''}` : `${units} day${units>1?'s':''}`;
+  } else {
+    unitLabel = '1 day';
+  }
 
-  document.getElementById('paySummary').innerHTML = `
-    <div><span>${esc(pendingBooking.itemName)}</span><span>Rs. ${pendingBooking.price.toLocaleString()}</span></div>
-    <div><span>Guests</span><span>${guests}</span></div>
-    <div><span>Date</span><span>${date || '—'}</span></div>
-    <div class="total"><span>Total due</span><span>Rs. ${pendingBooking.price.toLocaleString()}</span></div>`;
+  pendingBooking = {...pendingBooking, name, phone, date: checkIn, checkOut, guests, units, discount:0, coupon:null};
+  pendingBooking.subtotal = pendingBooking.price * units;
+
+  document.getElementById('couponCode').value = '';
+  document.getElementById('couponMsg').textContent = '';
+  renderPaySummary();
 
   document.getElementById('bookingStep1').hidden = true;
   document.getElementById('bookingStep2').hidden = false;
+}
+
+function renderPaySummary(){
+  const b = pendingBooking;
+  const total = Math.max(0, b.subtotal - (b.discount||0));
+  b.total = total;
+  document.getElementById('paySummary').innerHTML = `
+    <div><span>${esc(b.itemName)}</span><span>Rs. ${b.price.toLocaleString()} × ${b.units || 1}</span></div>
+    <div><span>Guests</span><span>${b.guests}</span></div>
+    <div><span>Date</span><span>${b.date || '—'}${b.checkOut ? ' → ' + b.checkOut : ''}</span></div>
+    ${b.coupon ? `<div><span>Coupon (${esc(b.coupon)})</span><span>− Rs. ${b.discount.toLocaleString()}</span></div>` : ''}
+    <div class="total"><span>Total due</span><span>Rs. ${total.toLocaleString()}</span></div>`;
+}
+
+function applyCoupon(){
+  const code = document.getElementById('couponCode').value.trim().toUpperCase();
+  const msg = document.getElementById('couponMsg');
+  const c = COUPONS[code];
+  if(!code){ msg.textContent='Enter a code first'; msg.className='coupon-msg err'; return; }
+  if(!c){ msg.textContent='Invalid or expired code'; msg.className='coupon-msg err'; pendingBooking.discount=0; pendingBooking.coupon=null; renderPaySummary(); return; }
+  pendingBooking.discount = c.type==='percent' ? Math.round(pendingBooking.subtotal * c.value/100) : c.value;
+  pendingBooking.coupon = code;
+  msg.textContent = `Applied — ${c.label}`;
+  msg.className = 'coupon-msg ok';
+  renderPaySummary();
 }
 
 function backToDetails(){
@@ -251,24 +379,64 @@ function formatCard(el){
   el.value = el.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
 }
 
+let lastReceipt = null;
+
 function confirmPayment(e){
   e.preventDefault();
   const bookings = load(LS.bookings, []);
   const record = {
     id: uid('bk'), type: pendingBooking.type, itemName: pendingBooking.itemName,
     customer: pendingBooking.name, phone: pendingBooking.phone, date: pendingBooking.date,
-    guests: pendingBooking.guests, price: pendingBooking.price, status: 'Confirmed',
+    checkOut: pendingBooking.checkOut || '', guests: pendingBooking.guests,
+    units: pendingBooking.units || 1, coupon: pendingBooking.coupon || '',
+    price: pendingBooking.total, status: 'Confirmed',
     createdAt: new Date().toISOString().slice(0,10)
   };
   bookings.push(record);
   save(LS.bookings, bookings);
+  lastReceipt = record;
 
   document.getElementById('bookingStep2').hidden = true;
   document.getElementById('bookingStep3').hidden = false;
   document.getElementById('confirmText').textContent =
-    `Rs. ${record.price.toLocaleString()} charged (demo). A confirmation would normally be sent to ${record.phone}.`;
+    `Rs. ${record.price.toLocaleString()} charged (demo).`;
+  document.getElementById('mockMessage').innerHTML = `
+    <b>Preview — WhatsApp / Email (demo, not sent)</b>
+    Hi ${esc(record.customer)}, your booking for <b style="display:inline">${esc(record.itemName)}</b> on ${record.date} is confirmed.
+    Total paid: Rs. ${record.price.toLocaleString()}. Booking ref: ${record.id.toUpperCase()}.`;
   toast('Booking confirmed 🎉');
   refreshAdminIfOpen();
+}
+
+function downloadReceipt(){
+  if(!lastReceipt) return;
+  const r = lastReceipt;
+  const s = load(LS.settings, {siteName:'Arovia Yathra'});
+  const w = window.open('', '_blank', 'width=420,height=640');
+  w.document.write(`
+    <html><head><title>Receipt ${r.id}</title><style>
+      body{font-family:'Work Sans',sans-serif; padding:2rem; color:#1E2A22;}
+      h1{font-family:Georgia,serif; font-size:1.3rem; margin-bottom:0;}
+      small{color:#4B5C50;}
+      table{width:100%; border-collapse:collapse; margin-top:1.2rem;}
+      td{padding:.5rem 0; border-bottom:1px solid #D3CDB6; font-size:.9rem;}
+      td:last-child{text-align:right; font-weight:600;}
+      .total td{font-weight:700; font-size:1.05rem; border-top:2px solid #1E2A22; border-bottom:none;}
+    </style></head><body>
+      <h1>${esc(s.siteName || 'Arovia Yathra')}</h1><small>Booking receipt (demo)</small>
+      <table>
+        <tr><td>Booking ref</td><td>${r.id.toUpperCase()}</td></tr>
+        <tr><td>Customer</td><td>${esc(r.customer)}</td></tr>
+        <tr><td>Service</td><td>${esc(r.itemName)}</td></tr>
+        <tr><td>Date</td><td>${r.date}${r.checkOut ? ' → '+r.checkOut : ''}</td></tr>
+        <tr><td>Guests</td><td>${r.guests}</td></tr>
+        ${r.coupon ? `<tr><td>Coupon</td><td>${r.coupon}</td></tr>` : ''}
+        <tr class="total"><td>Total paid</td><td>Rs. ${r.price.toLocaleString()}</td></tr>
+      </table>
+    </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(), 300);
 }
 
 function submitTrip(e){
@@ -324,7 +492,10 @@ function submitReview(e){
 /* ==================================================================
    MODALS / MISC
 ================================================================== */
-function openModal(id){ document.getElementById(id).classList.add('open'); }
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='wishlistModal') renderWishlistModal();
+}
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function toggleMobileNav(){
   const menu = document.getElementById('mobileMenu');
@@ -338,6 +509,7 @@ function toggleMobileNav(){
 function fakeLogin(e){ e.preventDefault(); closeModal('loginModal'); e.target.reset(); toast('Signed in (demo)'); }
 
 function esc(str){ const d=document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
+function escAttr(str){ return String(str ?? '').replace(/'/g, "\\'"); }
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -349,16 +521,33 @@ function toast(msg){
 /* ==================================================================
    ADMIN
 ================================================================== */
+function quickFillAdmin(role){
+  const acc = role === 'staff'
+    ? {email:'staff@aroviayathra.demo', pass:'staff123'}
+    : {email:'admin@aroviayathra.demo', pass:'admin123'};
+  document.getElementById('adminEmail').value = acc.email;
+  document.getElementById('adminPass').value = acc.pass;
+}
+
 function adminLogin(e){
   e.preventDefault();
   const email = document.getElementById('adminEmail').value.trim().toLowerCase();
   const pass = document.getElementById('adminPass').value;
-  if(email === 'admin@aroviayathra.demo' && pass === 'admin123'){
+  const acc = ADMIN_ACCOUNTS[email];
+  if(acc && acc.pass === pass){
     closeModal('adminLoginModal');
     e.target.reset();
-    document.getElementById('adminApp').classList.add('open');
+    currentAdminRole = acc.role;
+    document.getElementById('adminNameLabel').textContent = acc.name;
+    document.getElementById('adminRoleLabel').textContent = acc.role;
+    document.getElementById('adminAvatar').textContent = acc.avatar;
+    document.getElementById('adminProfileBtn').textContent = acc.avatar;
+    const adminApp = document.getElementById('adminApp');
+    adminApp.classList.add('open');
+    adminApp.classList.toggle('staff-mode', acc.role === 'Staff');
     document.body.style.overflow = 'hidden';
     renderAdminAll();
+    toast(`Welcome, ${acc.name} (${acc.role})`);
   } else {
     toast('Incorrect demo credentials');
   }
@@ -371,10 +560,11 @@ function toggleAdminSide(){ document.querySelector('.admin-sidebar').classList.t
 
 function adminTab(name, btn){
   document.querySelectorAll('.admin-nav button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   document.querySelectorAll('.admin-panel').forEach(p=>p.hidden = true);
   document.getElementById('panel-'+name).hidden = false;
   document.getElementById('adminPageTitle').textContent = name;
+  document.getElementById('adminGlobalSearch').value = '';
   if(name==='Overview') renderAdminOverview();
   if(name==='Bookings') renderAllBookings();
   if(name==='Properties') renderAdminGrid('property');
@@ -393,6 +583,7 @@ function refreshAdminIfOpen(){
 
 function renderAdminAll(){
   document.getElementById('navBookingCount').textContent = load(LS.bookings,[]).length;
+  renderNotifPanel();
   const active = document.querySelector('.admin-nav button.active');
   const name = active ? active.querySelector('span').textContent : 'Overview';
   renderAdminOverview();
@@ -402,6 +593,96 @@ function renderAdminAll(){
   if(name==='Tours') renderAdminGrid('tour');
   if(name==='Reviews') renderAdminReviews();
   if(name==='Customers') renderCustomers();
+}
+
+/* ---- NOTIFICATIONS ---- */
+function renderNotifPanel(){
+  const bookings = load(LS.bookings, []).filter(b=>b.status==='Pending').slice().reverse();
+  document.getElementById('notifCount').textContent = bookings.length;
+  document.getElementById('notifPanel').innerHTML = bookings.length
+    ? bookings.slice(0,8).map(b=>`
+        <div class="notif-item">
+          <b>New request — ${esc(b.itemName)}</b>
+          <small>${esc(b.customer)} • ${b.date || b.createdAt}</small>
+        </div>`).join('')
+    : '<div class="notif-item"><small>No pending requests right now.</small></div>';
+}
+function toggleNotifPanel(){
+  const p = document.getElementById('notifPanel');
+  p.hidden = !p.hidden;
+}
+
+/* ---- GLOBAL SEARCH ---- */
+function globalAdminSearch(q){
+  q = q.trim().toLowerCase();
+  if(!q){
+    document.getElementById('panel-Search').hidden = true;
+    const active = document.querySelector('.admin-nav button.active');
+    if(active) active.click();
+    return;
+  }
+  document.querySelectorAll('.admin-panel').forEach(p=>p.hidden = true);
+  document.getElementById('panel-Search').hidden = false;
+  document.getElementById('adminPageTitle').textContent = 'Search';
+  document.getElementById('searchQueryLabel').textContent = q;
+
+  const hits = [];
+  load(LS.bookings,[]).forEach(b=>{
+    if((b.customer||'').toLowerCase().includes(q) || (b.itemName||'').toLowerCase().includes(q) || (b.phone||'').includes(q))
+      hits.push({cat:'Booking', title:`${b.itemName} — ${b.customer}`, sub:`${b.status} • ${b.date||b.createdAt}`, go:'Bookings'});
+  });
+  load(LS.properties,[]).forEach(p=>{ if(p.name.toLowerCase().includes(q)) hits.push({cat:'Property', title:p.name, sub:p.area, go:'Properties'}); });
+  load(LS.vehicles,[]).forEach(v=>{ if(v.name.toLowerCase().includes(q)) hits.push({cat:'Vehicle', title:v.name, sub:v.desc, go:'Vehicles'}); });
+  load(LS.tours,[]).forEach(t=>{ if(t.name.toLowerCase().includes(q)) hits.push({cat:'Tour', title:t.name, sub:t.desc, go:'Tours'}); });
+
+  const custMap = {};
+  load(LS.bookings,[]).forEach(b=>{ if(b.phone) custMap[b.phone] = b.customer; });
+  Object.entries(custMap).forEach(([phone,name])=>{
+    if(name.toLowerCase().includes(q) || phone.includes(q)) hits.push({cat:'Customer', title:name, sub:phone, go:'Customers'});
+  });
+
+  document.getElementById('searchResultsList').innerHTML = hits.length
+    ? hits.map(h=>`
+        <div class="search-hit" onclick="jumpToTab('${h.go}')">
+          <div><span class="search-cat">${h.cat}</span><br>${esc(h.title)}<small>${esc(h.sub||'')}</small></div>
+          <span>→</span>
+        </div>`).join('')
+    : '<p class="empty-note">No matches found.</p>';
+}
+function jumpToTab(name){
+  document.getElementById('adminGlobalSearch').value = '';
+  const btn = [...document.querySelectorAll('.admin-nav button')].find(b=>b.querySelector('span')?.textContent === name);
+  if(btn) adminTab(name, btn);
+}
+
+/* ---- CSV EXPORT ---- */
+function downloadCSV(filename, rows){
+  const csv = rows.map(r => r.map(v => `"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('CSV downloaded');
+}
+function exportBookingsCSV(){
+  const rows = [['ID','Type','Item','Customer','Phone','Date','Guests','Price','Status','Created']];
+  load(LS.bookings,[]).forEach(b=>rows.push([b.id,b.type,b.itemName,b.customer,b.phone,b.date,b.guests,b.price,b.status,b.createdAt]));
+  downloadCSV('arovia-bookings.csv', rows);
+}
+function exportCustomersCSV(){
+  const bookings = load(LS.bookings, []);
+  const map = {};
+  bookings.forEach(b=>{
+    if(!b.phone) return;
+    if(!map[b.phone]) map[b.phone] = {name:b.customer, phone:b.phone, count:0, spend:0};
+    map[b.phone].count++;
+    if(b.status!=='Cancelled') map[b.phone].spend += b.price;
+  });
+  const rows = [['Customer','Phone','Bookings','Total spend']];
+  Object.values(map).forEach(c=>rows.push([c.name,c.phone,c.count,c.spend]));
+  downloadCSV('arovia-customers.csv', rows);
 }
 
 /* ---- OVERVIEW ---- */
@@ -587,8 +868,11 @@ function renderAdminGrid(type){
   const meta = TYPE_META[type];
   const list = load(meta.store, []);
   const gridId = {property:'adminPropertyGrid', vehicle:'adminVehicleGrid', tour:'adminTourGrid'}[type];
-  document.getElementById(gridId).innerHTML = list.map(item=>`
-    <div class="admin-item-card">
+  document.getElementById(gridId).innerHTML = list.map((item,i)=>`
+    <div class="admin-item-card" draggable="true" data-index="${i}"
+         ondragstart="dragStart(event,'${type}',${i})" ondragover="dragOverItem(event)"
+         ondrop="dropItem(event,'${type}',${i})" ondragend="dragEndItem(event)" ondragleave="event.currentTarget.classList.remove('drag-over')">
+      <div class="drag-handle">⠿ DRAG TO REORDER</div>
       <h3>${esc(item.name)}</h3>
       <p>${esc(item.area || item.desc || '')}</p>
       <div class="price">Rs. ${(item.price||0).toLocaleString()}</div>
@@ -597,6 +881,35 @@ function renderAdminGrid(type){
         <button class="del-a" onclick="deleteItem('${type}','${item.id}')">Delete</button>
       </div>
     </div>`).join('') || '<p class="empty-note">Nothing here yet — add one above.</p>';
+}
+
+let dragCtx = null;
+function dragStart(e, type, index){
+  dragCtx = {type, index};
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragOverItem(e){
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function dragEndItem(e){
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.admin-item-card').forEach(c=>c.classList.remove('drag-over'));
+}
+function dropItem(e, type, dropIndex){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(!dragCtx || dragCtx.type !== type || dragCtx.index === dropIndex) return;
+  const meta = TYPE_META[type];
+  const list = load(meta.store, []);
+  const [moved] = list.splice(dragCtx.index, 1);
+  list.splice(dropIndex, 0, moved);
+  save(meta.store, list);
+  renderAdminGrid(type);
+  renderProperties(); renderTours(); renderVehicles();
+  toast('Order updated');
+  dragCtx = null;
 }
 
 function openItemForm(type, id){
